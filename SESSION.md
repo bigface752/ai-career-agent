@@ -10,9 +10,9 @@
 
 **任务**：V1 上线准备 — Phase 0 基础设施就绪
 
-**进度**：V1 开发全部完成 ✅，对抗性审查修复完成 ✅，上线规划完成 ✅
+**进度**：V1 开发全部完成 ✅，对抗性审查修复完成 ✅，上线规划完成 ✅，Phase 0 基本完成 ✅
 
-**下一步**：执行 Phase 0（Git 仓库 + .env.example + JWT_SECRET）
+**下一步**：推送代码到 GitHub（网络超时，待重试），然后进入 Phase 1
 
 ---
 
@@ -20,7 +20,7 @@
 
 | Phase | 内容 | 预估时间 | 状态 |
 |-------|------|----------|------|
-| 0 | 基础设施就绪（Git、.env.example、JWT_SECRET） | 1-2 天 | ⬜ 待执行 |
+| 0 | 基础设施就绪（Git、.env.example、JWT_SECRET） | 1-2 天 | 🔄 进行中 |
 | 1 | 安全加固（速率限制、安全 Headers、CORS） | 2-3 天 | ⬜ 待执行 |
 | 2 | 可观测性（Sentry、结构化日志、健康检查） | 2-3 天 | ⬜ 待执行 |
 | 3 | 测试体系（Vitest、P0/P1/P2 测试用例） | 3-5 天 | ⬜ 待执行 |
@@ -35,10 +35,10 @@
 
 ## Phase 0 任务清单
 
-- [ ] 0.1 Git 仓库初始化（git init + 首次 commit + 推送 GitHub）
-- [ ] 0.2 创建 .env.example（完整变量清单）
-- [ ] 0.3 生成并配置 JWT_SECRET（openssl rand -base64 32）
-- [ ] 0.4 验证 npm run build 通过
+- [x] 0.1 Git 仓库初始化（git init + 首次 commit ✅ + 推送 GitHub ⏳ 网络超时）
+- [x] 0.2 创建 .env.example（完整变量清单）
+- [x] 0.3 生成并配置 JWT_SECRET（openssl rand -base64 32）
+- [x] 0.4 验证 npm run build 通过（61 页面全部生成）
 
 ---
 
@@ -117,4 +117,4 @@ NODE_ENV=production
 
 ---
 
-*最后更新：2026-07-01 V1开发完成，对抗性审查修复完成，上线规划完成，准备执行 Phase 0*
+*最后更新：2026-07-02 Phase 0 基本完成（git init + commit + .env.example + JWT_SECRET + build 验证通过），GitHub 推送待网络恢复后重试*
