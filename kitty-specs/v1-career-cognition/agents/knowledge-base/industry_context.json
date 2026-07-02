@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "last_updated": "2026-06-12",
+    "confidence_level": "high",
+    "data_sources": ["ai-efficiency-expert.md §2.5", "market-benchmark.md", "headhunter.md"],
+    "owner": "multiple files consolidated"
+  },
+
+  "b2b_vs_internet": {
+    "ai_replacement_speed": {
+      "b2b": "中等（行业壁垒保护）",
+      "internet": "快（通用技能易替代）"
+    },
+    "ai_enhancement_opportunity": {
+      "b2b": "高（AI+行业知识=稀缺）",
+      "internet": "高（AI+技术能力）"
+    },
+    "must_learn_ai": {
+      "b2b": "行业特定AI工具",
+      "internet": "通用AI工具"
+    },
+    "core_competitive_advantage": {
+      "b2b": "AI+行业深耕",
+      "internet": "AI+技术深度"
+    },
+    "salary_structure": {
+      "b2b_typical_3yr": "18-25万",
+      "internet_typical_3yr": "25-40万",
+      "b2b_ceiling": "50-80万",
+      "internet_ceiling": "100万+"
+    },
+    "industry_mobility": {
+      "b2b": "低（垂直领域，行业壁垒高）",
+      "internet": "高（通用技能可迁移）"
+    },
+    "promotion_logic": {
+      "b2b": "行业深度+管理能力",
+      "internet": "技术深度+快速迭代"
+    },
+    "ceiling_cause": {
+      "b2b": "行业知识瓶颈",
+      "internet": "技术栈瓶颈"
+    },
+    "job_hopping_risk": {
+      "b2b": "高（圈子小，频繁跳槽口碑差）",
+      "internet": "低（跳槽是常态）"
+    }
+  },
+
+  "b2b_characteristics": {
+    "evaluation_focus": "行业深度+稀缺性，不是跳槽频率",
+    "scarcity_source": "行业壁垒+垂直领域知识+人脉",
+    "decision_chain": "B2B决策链长，需要理解采购周期和客户生命周期",
+    "core_metrics": "续费率、ARPU、LTV、CAC、NRR（不是DAU/MAU）"
+  }
+}

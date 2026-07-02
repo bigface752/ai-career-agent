@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "last_updated": "2026-06-12",
+    "position_id": "b2b-sales",
+    "position_name": "B2B销售"
+  },
+
+  "triggers": [
+    {
+      "condition": "用户简历中职位包含'销售'且行业为B2B，但positions/b2b-sales.json不存在",
+      "trigger_type": "new_position"
+    },
+    {
+      "condition": "positions/b2b-sales.json的last_updated距今超过90天",
+      "trigger_type": "data_expired"
+    },
+    {
+      "condition": "用户提到意向公司（如'我想去Salesforce做销售'）",
+      "trigger_type": "target_company"
+    }
+  ],
+
+  "queries": {
+    "ai_efficiency_expert": [
+      {
+        "query_template": "{position} SDR AI替代 {year} 工具",
+        "variables": ["position", "year"],
+        "purpose": "更新SDR/BDR的AI替代数据"
+      },
+      {
+        "query_template": "{position} AI工具 {year} 替代率",
+        "variables": ["position", "year"],
+        "purpose": "更新AI销售工具数据"
+      }
+    ],
+    "market_benchmark": [
+      {
+        "query_template": "{position} 薪资 SDR AE {year} 中位数",
+        "variables": ["position", "year"],
+        "purpose": "更新销售各细分的薪资数据"
+      }
+    ],
+    "headhunter": [
+      {
+        "query_template": "{position} 人才 供需 {year} 大客户",
+        "variables": ["position", "year"],
+        "purpose": "更新销售人才供需数据"
+      }
+    ],
+    "industry_director": [
+      {
+        "query_template": "{position} 行业现状 {year} B2B",
+        "variables": ["position", "year"],
+        "purpose": "更新B2B销售行业趋势"
+      }
+    ]
+  },
+
+  "result_processing": {
+    "extract_fields": [
+      "sdr_ai_replacement_rate",
+      "salary_by_subtype",
+      "market_demand_by_subtype",
+      "ai_tools_updates"
+    ],
+    "output_target": "positions/b2b-sales.json",
+    "confidence_check": "需要至少2个独立来源交叉验证"
+  }
+}

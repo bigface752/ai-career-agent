@@ -1,0 +1,85 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "last_updated": "2026-06-12",
+    "position_id": "data-analyst",
+    "position_name": "数据分析师"
+  },
+
+  "triggers": [
+    {
+      "condition": "用户简历中职位包含'数据分析师'但positions/data-analyst.json不存在",
+      "trigger_type": "new_position"
+    },
+    {
+      "condition": "positions/data-analyst.json的last_updated距今超过90天",
+      "trigger_type": "data_expired"
+    },
+    {
+      "condition": "用户提到意向公司（如'我想去字节做数据分析'）",
+      "trigger_type": "target_company"
+    },
+    {
+      "condition": "用户简历中的公司名不在已知B2B企业列表中",
+      "trigger_type": "unknown_company"
+    }
+  ],
+
+  "queries": {
+    "ai_efficiency_expert": [
+      {
+        "query_template": "{position} {year} AI替代率 工具 趋势",
+        "variables": ["position", "year"],
+        "purpose": "更新AI影响分析数据"
+      },
+      {
+        "query_template": "{position} AI工具 替代 {year} 最新",
+        "variables": ["position", "year"],
+        "purpose": "更新AI工具列表和替代率"
+      }
+    ],
+    "market_benchmark": [
+      {
+        "query_template": "{position} {year} 薪资 中位数 B2B",
+        "variables": ["position", "year"],
+        "purpose": "更新薪资分位数据"
+      },
+      {
+        "query_template": "{position} 招聘 需求 {year} 趋势",
+        "variables": ["position", "year"],
+        "purpose": "更新市场需求度数据"
+      }
+    ],
+    "headhunter": [
+      {
+        "query_template": "{position} 人才 供需 {year} 稀缺",
+        "variables": ["position", "year"],
+        "purpose": "更新市场稀缺性数据"
+      }
+    ],
+    "industry_director": [
+      {
+        "query_template": "{position} {industry} 行业现状 {year}",
+        "variables": ["position", "industry", "year"],
+        "purpose": "更新行业现状分析"
+      },
+      {
+        "query_template": "{position} 转型 发展路径 {year}",
+        "variables": ["position", "year"],
+        "purpose": "更新转型路径数据"
+      }
+    ]
+  },
+
+  "result_processing": {
+    "extract_fields": [
+      "salary_range",
+      "ai_tools_list",
+      "replacement_rates",
+      "market_demand",
+      "industry_trends"
+    ],
+    "output_target": "positions/data-analyst.json",
+    "confidence_check": "需要至少2个独立来源交叉验证，单来源数据标记confidence=low"
+  }
+}

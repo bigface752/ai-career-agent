@@ -1,0 +1,138 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "last_updated": "2026-06-12",
+    "confidence_level": "medium",
+    "data_sources": ["ai-efficiency-expert.md §4.7", "industry-director-pmm.md（骨架）"],
+    "owner": "industry-director-pmm.md",
+    "note": "PMM数据较薄，部分基于行业推断，需后续用户交互验证"
+  },
+
+  "position_id": "pmm",
+  "display_name": "产品市场经理（PMM）",
+  "display_name_en": "Product Marketing Manager",
+
+  "sub_types": [
+    {"name": "产品传声筒型", "description": "以产品文档和内容创作为主", "ai_risk_level": "高"},
+    {"name": "市场战略家型", "description": "GTM策略、跨部门协作、品牌建设", "ai_risk_level": "低"},
+    {"name": "销售赋能型", "description": "销售工具包、竞品分析、定价策略", "ai_risk_level": "中"}
+  ],
+
+  "ai_impact": {
+    "tasks_replaced": [
+      {"task": "竞品分析", "ai_tool": "AI竞品分析工具、ChatGPT", "replacement_rate": "高"},
+      {"task": "内容创作", "ai_tool": "Jasper、Copy.ai、ChatGPT", "replacement_rate": "高"},
+      {"task": "数据分析", "ai_tool": "AI分析工具", "replacement_rate": "中高"},
+      {"task": "定位文档撰写", "ai_tool": "AI写作工具", "replacement_rate": "中高"}
+    ],
+    "tasks_enhanced": [
+      {"task": "市场定位", "how": "AI快速收集市场数据，人类做战略判断"},
+      {"task": "GTM策略", "how": "AI分析市场趋势，人类设计执行路径"},
+      {"task": "跨部门协作", "how": "AI准备材料，人类做沟通和推动"},
+      {"task": "品牌建设", "how": "AI生成内容初稿，人类把控品牌调性"}
+    ],
+    "efficiency_gain": "分析和内容效率提升3-5x",
+    "future_model": "AI PMM——AI生成内容和分析，人类聚焦策略和创意",
+    "replacement_mode": {
+      "old_pattern": "PMM手动做竞品分析、写内容、做数据报告",
+      "new_pattern": "AI生成初稿，PMM聚焦GTM策略和跨部门协调",
+      "description": "PMM从执行者转向策略制定者"
+    },
+    "data_source": "行业报告"
+  },
+
+  "core_competencies": {
+    "irreplaceable": [
+      {"capability": "产品定位", "why_ai_cant": "需要理解产品、市场、用户的交叉点", "importance": "⭐⭐⭐⭐⭐"},
+      {"capability": "GTM策略", "why_ai_cant": "需要理解销售渠道、客户决策链、竞争格局", "importance": "⭐⭐⭐⭐"},
+      {"capability": "跨部门协作", "why_ai_cant": "需要协调产品、销售、市场、客户成功", "importance": "⭐⭐⭐⭐"},
+      {"capability": "品牌建设", "why_ai_cant": "需要理解品牌调性、用户心智、市场定位", "importance": "⭐⭐⭐⭐"},
+      {"capability": "销售赋能", "why_ai_cant": "需要理解销售痛点和客户需求", "importance": "⭐⭐⭐⭐"}
+    ],
+    "being_replaced": [
+      {"capability": "竞品分析", "ai_tool": "AI竞品分析工具", "replacement_rate": "高"},
+      {"capability": "内容创作", "ai_tool": "Jasper/Copy.ai", "replacement_rate": "高"},
+      {"capability": "数据分析", "ai_tool": "AI分析工具", "replacement_rate": "中高"},
+      {"capability": "定位文档撰写", "ai_tool": "AI写作工具", "replacement_rate": "中高"}
+    ]
+  },
+
+  "industry_barriers": [
+    {"barrier": "B2B业务理解", "description": "懂B2B销售流程、客户决策链、采购周期", "protection_level": "高"},
+    {"barrier": "行业知识", "description": "懂所在行业的产品、竞争、客户", "protection_level": "高"},
+    {"barrier": "跨部门影响力", "description": "能协调产品、销售、市场多个团队", "protection_level": "中"},
+    {"barrier": "品牌策略能力", "description": "能定义和维护品牌定位", "protection_level": "中"}
+  ],
+
+  "salary": {
+    "confidence": "low",
+    "last_updated": "2026-06-30",
+    "data_source": "curated_llm_inference (2026-06, B2B SaaS PMM, 招聘网站数据待接入)",
+    "methodology": "基于猎聘/BOSS直聘公开薪资区间 + Product Marketing Alliance报告，P25-P90为月薪资（元）",
+    "limitations": ["sample_size=0表示无真实样本", "PMM岗位样本量本身就少", "仅覆盖一线城市", "不含年终奖"],
+    "b2b_range": {
+      "junior": "15-22K/月",
+      "mid": "22-35K/月",
+      "senior": "35-55K/月",
+      "ceiling": "40-70万/年（市场总监）"
+    },
+    "comparison_note": "PMM在B2B企业软件中薪资高于普通市场岗，因为需要懂产品和销售",
+    "by_city": {
+      "上海": {"P25": 15000, "P50": 25000, "P75": 38000, "P90": 52000, "sample_size": 0},
+      "北京": {"P25": 16000, "P50": 27000, "P75": 40000, "P90": 55000, "sample_size": 0},
+      "深圳": {"P25": 14000, "P50": 23000, "P75": 35000, "P90": 48000, "sample_size": 0},
+      "杭州": {"P25": 13000, "P50": 22000, "P75": 33000, "P90": 45000, "sample_size": 0},
+      "default": {"P25": 12000, "P50": 20000, "P75": 30000, "P90": 42000, "sample_size": 0}
+    }
+  },
+
+  "transformation_path": [
+    {
+      "stage": "现在",
+      "timeframe": "当前",
+      "role": "PMM（执行型）",
+      "core_skills": "竞品分析、内容创作、数据分析",
+      "tools": []
+    },
+    {
+      "stage": "6个月内",
+      "timeframe": "0-6个月",
+      "role": "AI增强型PMM",
+      "core_skills": "用AI工具提效，聚焦策略",
+      "tools": ["AI内容工具（Jasper/Copy.ai）", "AI分析工具"]
+    },
+    {
+      "stage": "12个月内",
+      "timeframe": "6-12个月",
+      "role": "PMM（策略型）",
+      "core_skills": "GTM策略、品牌建设、跨部门协作",
+      "tools": ["AI竞品分析工具", "AI市场研究工具"]
+    },
+    {
+      "stage": "24个月内",
+      "timeframe": "12-24个月",
+      "role": "市场总监/VP Marketing",
+      "core_skills": "市场战略、团队管理、商业决策",
+      "tools": []
+    }
+  ],
+
+  "required_ai_tools": [
+    {"tool": "AI内容工具", "priority": "必须学", "use_case": "Jasper/Copy.ai，内容创作提效", "learning_time": "1周", "price": "付费"},
+    {"tool": "AI分析工具", "priority": "必须学", "use_case": "数据分析和竞品分析", "learning_time": "1-2周", "price": "部分免费"},
+    {"tool": "AI竞品分析工具", "priority": "建议学", "use_case": "自动化竞品监控和分析", "learning_time": "1周", "price": "付费"}
+  ],
+
+  "anti_intuition_insights": [
+    {
+      "insight": "PMM最大的威胁不是AI替代，而是'产品传声筒'定位的消亡",
+      "evidence": "AI能自动生成产品文档和内容，纯执行型PMM的价值在下降",
+      "implication": "必须从'写文档'转向'定策略'，成为GTM策略的核心制定者"
+    },
+    {
+      "insight": "B2B PMM比C端PMM更安全",
+      "evidence": "B2B的客户决策链复杂，需要深度行业知识，AI难以替代",
+      "implication": "深耕B2B行业知识是PMM最好的护城河"
+    }
+  ]
+}

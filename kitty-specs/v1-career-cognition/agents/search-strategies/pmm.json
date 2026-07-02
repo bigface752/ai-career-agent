@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "last_updated": "2026-06-12",
+    "position_id": "pmm",
+    "position_name": "PMM（产品市场经理）"
+  },
+
+  "triggers": [
+    {
+      "condition": "用户简历中职位包含'PMM'或'产品市场'但positions/pmm.json不存在",
+      "trigger_type": "new_position"
+    },
+    {
+      "condition": "positions/pmm.json的last_updated距今超过90天",
+      "trigger_type": "data_expired"
+    },
+    {
+      "condition": "用户提到意向公司",
+      "trigger_type": "target_company"
+    }
+  ],
+
+  "queries": {
+    "ai_efficiency_expert": [
+      {
+        "query_template": "PMM 产品市场经理 AI替代 {year} 工具",
+        "variables": ["year"],
+        "purpose": "更新PMM的AI影响数据"
+      }
+    ],
+    "market_benchmark": [
+      {
+        "query_template": "PMM 产品市场 薪资 B2B {year}",
+        "variables": ["year"],
+        "purpose": "更新PMM薪资数据"
+      }
+    ],
+    "industry_director": [
+      {
+        "query_template": "PMM 产品市场 行业趋势 {year} B2B SaaS",
+        "variables": ["year"],
+        "purpose": "更新PMM行业趋势"
+      }
+    ]
+  },
+
+  "result_processing": {
+    "extract_fields": [
+      "ai_impact_data",
+      "salary_range",
+      "industry_trends",
+      "transformation_paths"
+    ],
+    "output_target": "positions/pmm.json",
+    "confidence_check": "PMM数据较薄，单来源数据也可接受但标记confidence=low"
+  }
+}

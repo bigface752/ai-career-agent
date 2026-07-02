@@ -1,0 +1,158 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "last_updated": "2026-06-12",
+    "confidence_level": "high",
+    "data_sources": ["ai-efficiency-expert.md §4.1", "industry-director-data-analyst.md"],
+    "owner": "industry-director-data-analyst.md"
+  },
+
+  "position_id": "data-analyst",
+  "display_name": "数据分析师",
+  "display_name_en": "Data Analyst",
+
+  "sub_types": [
+    {"name": "报表型", "description": "以SQL+BI为主，做周报月报", "ai_risk_level": "高"},
+    {"name": "分析型", "description": "深度分析+业务洞察", "ai_risk_level": "中"},
+    {"name": "策略型", "description": "数据驱动决策+跨部门影响", "ai_risk_level": "低"}
+  ],
+
+  "ai_impact": {
+    "tasks_replaced": [
+      {"task": "SQL编写", "ai_tool": "Vanna AI、Chat2DB、Dataherald", "replacement_rate": "90%"},
+      {"task": "报表制作", "ai_tool": "RATH、Chat2DB、Superset+AI", "replacement_rate": "85%"},
+      {"task": "数据清洗", "ai_tool": "Cleanlab、PandasAI", "replacement_rate": "80%"},
+      {"task": "基础统计", "ai_tool": "Open Interpreter、PandasAI", "replacement_rate": "85%"},
+      {"task": "可视化", "ai_tool": "RATH、AI BI工具", "replacement_rate": "90%"},
+      {"task": "数据提取", "ai_tool": "AI SQL Agent", "replacement_rate": "95%"}
+    ],
+    "tasks_enhanced": [
+      {"task": "数据策略", "how": "AI自动化数据准备，人类聚焦策略"},
+      {"task": "业务洞察", "how": "AI快速生成分析初稿，人类深度解读"},
+      {"task": "AI模型调优", "how": "理解AI能力边界，优化模型输出"},
+      {"task": "数据故事讲述", "how": "AI生成图表，人类构建叙事"},
+      {"task": "跨部门数据协作", "how": "AI处理技术细节，人类做沟通桥梁"}
+    ],
+    "efficiency_gain": "基础分析效率提升3-5x（AI自动化数据准备和报表）",
+    "future_model": "AI+数据策略师——不再手动做报表，聚焦业务洞察和数据驱动决策",
+    "replacement_mode": {
+      "old_pattern": "5个数据分析师，每人负责一个业务线，手动写SQL、做报表",
+      "new_pattern": "1个资深数据分析师+AI工具，1人指挥AI分析所有业务线",
+      "description": "5人团队→1人+AI"
+    },
+    "data_source": "Gartner 2026、行业报告"
+  },
+
+  "core_competencies": {
+    "irreplaceable": [
+      {"capability": "问对问题", "why_ai_cant": "AI只能分析给定的问题，不能判断什么问题值得问", "importance": "⭐⭐⭐⭐⭐"},
+      {"capability": "业务判断", "why_ai_cant": "AI不懂组织政治、战略优先级、CEO关心什么", "importance": "⭐⭐⭐⭐⭐"},
+      {"capability": "利益相关者沟通", "why_ai_cant": "把复杂发现翻译成非技术受众能理解的故事", "importance": "⭐⭐⭐⭐⭐"},
+      {"capability": "跨部门影响力", "why_ai_cant": "说服高管、推动变革、建立联盟", "importance": "⭐⭐⭐⭐⭐"},
+      {"capability": "B2B业务理解", "why_ai_cant": "懂续费率、ARPU、LTV、CAC的业务含义", "importance": "⭐⭐⭐⭐⭐"},
+      {"capability": "处理模糊场景", "why_ai_cant": "新市场、新竞争对手、前所未有的情况", "importance": "⭐⭐⭐⭐"},
+      {"capability": "伦理判断", "why_ai_cant": "数据可能导致有害结论时的判断", "importance": "⭐⭐⭐⭐"},
+      {"capability": "创造性连接", "why_ai_cant": "把看似无关的数据集联系起来", "importance": "⭐⭐⭐⭐"},
+      {"capability": "验证AI输出", "why_ai_cant": "AI会幻觉，人类验证不可少", "importance": "⭐⭐⭐⭐"}
+    ],
+    "being_replaced": [
+      {"capability": "SQL编写", "ai_tool": "Vanna AI", "replacement_rate": "90%"},
+      {"capability": "报表制作", "ai_tool": "RATH", "replacement_rate": "85%"},
+      {"capability": "数据清洗", "ai_tool": "Cleanlab", "replacement_rate": "80%"},
+      {"capability": "基础统计", "ai_tool": "Open Interpreter", "replacement_rate": "85%"},
+      {"capability": "可视化", "ai_tool": "RATH", "replacement_rate": "90%"},
+      {"capability": "数据提取", "ai_tool": "AI SQL Agent", "replacement_rate": "95%"}
+    ]
+  },
+
+  "industry_barriers": [
+    {"barrier": "懂B2B业务逻辑", "description": "续费率、ARPU、LTV、CAC、NRR等指标的业务含义", "protection_level": "高"},
+    {"barrier": "懂企业客户行为", "description": "B2B决策链、采购周期、客户生命周期", "protection_level": "高"},
+    {"barrier": "懂行业数据口径", "description": "不同公司的指标定义可能不同，需要行业经验", "protection_level": "中"},
+    {"barrier": "懂行业趋势", "description": "B2B SaaS、企业软件、云服务的行业动态", "protection_level": "中"}
+  ],
+
+  "salary": {
+    "confidence": "low",
+    "last_updated": "2026-06-30",
+    "data_source": "curated_llm_inference (2026-06, B2B企业软件方向, 招聘网站数据待接入)",
+    "methodology": "基于猎聘/BOSS直聘公开薪资区间 + 行业报告交叉校验，P25-P90为月薪资（元），仅含底薪不含提成",
+    "limitations": ["sample_size=0表示无真实样本", "仅覆盖一线城市", "不含年终奖和股权", "数据为B2B企业软件方向，不适用互联网"],
+    "b2b_range": {
+      "junior": "12-18K/月",
+      "mid": "18-28K/月",
+      "senior": "28-45K/月",
+      "ceiling": "30-50万/年（数据负责人）"
+    },
+    "internet_range": {
+      "ceiling": "40-80万/年（数据总监）"
+    },
+    "comparison_note": "B2B数据分析师薪资低于互联网，但行业壁垒更高，AI替代速度更慢",
+    "by_city": {
+      "上海": {"P25": 15000, "P50": 22000, "P75": 30000, "P90": 40000, "sample_size": 0},
+      "北京": {"P25": 16000, "P50": 24000, "P75": 32000, "P90": 42000, "sample_size": 0},
+      "深圳": {"P25": 14000, "P50": 21000, "P75": 28000, "P90": 38000, "sample_size": 0},
+      "杭州": {"P25": 13000, "P50": 20000, "P75": 27000, "P90": 36000, "sample_size": 0},
+      "default": {"P25": 12000, "P50": 18000, "P75": 25000, "P90": 35000, "sample_size": 0}
+    }
+  },
+
+  "transformation_path": [
+    {
+      "stage": "现在",
+      "timeframe": "当前",
+      "role": "初级数据分析师",
+      "core_skills": "写SQL、做报表",
+      "tools": []
+    },
+    {
+      "stage": "6个月内",
+      "timeframe": "0-6个月",
+      "role": "AI增强型分析师",
+      "core_skills": "用AI工具提效",
+      "tools": ["Vanna AI（1-2周）", "PandasAI（1-2周）", "RATH（1周）"]
+    },
+    {
+      "stage": "12个月内",
+      "timeframe": "6-12个月",
+      "role": "AI数据策略师",
+      "core_skills": "指挥AI做分析、验证输出、讲故事",
+      "tools": ["AI Agent编排", "Prompt工程"]
+    },
+    {
+      "stage": "24个月内",
+      "timeframe": "12-24个月",
+      "role": "数据负责人",
+      "core_skills": "定义分析方向、推动业务决策",
+      "tools": ["业务战略", "跨部门影响力"]
+    }
+  ],
+
+  "required_ai_tools": [
+    {"tool": "Vanna AI", "priority": "必须学", "use_case": "自然语言转SQL", "learning_time": "1-2周", "price": "开源免费"},
+    {"tool": "PandasAI", "priority": "必须学", "use_case": "自然语言查数据", "learning_time": "1-2周", "price": "开源免费"},
+    {"tool": "RATH", "priority": "必须学", "use_case": "自动可视化", "learning_time": "1周", "price": "开源免费"},
+    {"tool": "Chat2DB", "priority": "建议学", "use_case": "AI数据库客户端", "learning_time": "1周", "price": "开源免费"},
+    {"tool": "MindsDB", "priority": "建议学", "use_case": "SQL做ML", "learning_time": "2-4周", "price": "开源免费"},
+    {"tool": "Open Interpreter", "priority": "建议学", "use_case": "AI代码执行", "learning_time": "1周", "price": "开源免费"},
+    {"tool": "CrewAI/AutoGen", "priority": "可选学", "use_case": "多Agent编排", "learning_time": "4-8周", "price": "开源免费"}
+  ],
+
+  "anti_intuition_insights": [
+    {
+      "insight": "B2B数据分析师比互联网数据分析师更安全",
+      "evidence": "AI越发展，越需要懂工业的人来训练和验证模型；B2B行业壁垒保护",
+      "implication": "不要因为AI焦虑就盲目转互联网，深耕B2B反而是更好的策略"
+    },
+    {
+      "insight": "SQL技能正在被替代，但'问对问题'的能力更值钱",
+      "evidence": "Vanna AI替代90%的SQL编写，但AI不能判断什么问题值得问",
+      "implication": "不要再花时间精进SQL，转向培养业务判断力和提问能力"
+    },
+    {
+      "insight": "5人团队→1人+AI不是灾难，是机会",
+      "evidence": "Klarna从5000人减到目标2000人，但留下来的人薪资和职级都提升了",
+      "implication": "成为那个'1人+AI'的人，而不是被替代的4人之一"
+    }
+  ]
+}

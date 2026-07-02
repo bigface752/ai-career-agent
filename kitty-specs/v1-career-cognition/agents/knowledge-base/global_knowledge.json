@@ -1,0 +1,106 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "last_updated": "2026-06-12",
+    "confidence_level": "high",
+    "data_sources": ["WEF Future of Jobs 2025", "Gartner 2026", "Goldman Sachs 2025", "多家市场研究"],
+    "owner": "ai-efficiency-expert.md §3"
+  },
+
+  "macro_ai_data": {
+    "jobs_displaced": {
+      "number": "8500万",
+      "source": "WEF Future of Jobs 2025",
+      "year": 2025
+    },
+    "jobs_created": {
+      "number": "9700万（净增1200万）",
+      "source": "WEF Future of Jobs 2025",
+      "year": 2025
+    },
+    "enterprise_adoption": {
+      "percentage": "80%的企业岗位将被AI显著改变",
+      "source": "Gartner 2026",
+      "year": 2026
+    },
+    "automation_rate": {
+      "percentage": "25%的工作任务可被AI自动化",
+      "source": "Goldman Sachs 2025",
+      "year": 2025
+    },
+    "agent_market": {
+      "size_2026": "68亿美元",
+      "size_2030": "470亿美元",
+      "cagr": "34-43%",
+      "sources": "多家市场研究"
+    },
+    "agentic_ai_adoption": {
+      "percentage": "33%的企业软件将含Agentic AI（2028年预测）",
+      "source": "Gartner"
+    }
+  },
+
+  "flagship_cases": [
+    {
+      "company": "Klarna",
+      "action": "AI替代700名客服+分析师",
+      "data": "5000→3500人，目标2000人，AI 2分钟解决vs人工11分钟，2/3交互由AI处理",
+      "source": "CEO公开声明"
+    },
+    {
+      "company": "Shopify",
+      "action": "CEO内部信'AI是基线期望'",
+      "data": "团队必须证明AI做不了才能招人",
+      "source": "2025年4月内部信"
+    },
+    {
+      "company": "IBM Consulting",
+      "action": "AI Agent重组咨询团队",
+      "data": "暂停7800个后台和数据岗位招聘，转向更高价值工作",
+      "source": "CEO公开声明"
+    },
+    {
+      "company": "Salesforce",
+      "action": "减少工程师和支持人员招聘",
+      "data": "部署Agentforce替代",
+      "source": "2025年声明"
+    },
+    {
+      "company": "GitHub Copilot",
+      "action": "开发者效率提升",
+      "data": "编码效率提升55%",
+      "source": "GitHub官方数据"
+    },
+    {
+      "company": "BT Group",
+      "action": "计划裁减55000人",
+      "data": "约10000人由AI替代",
+      "source": "公司公告"
+    }
+  ],
+
+  "ai_tools_catalog": {
+    "coding_agents": [
+      {"name": "OpenAI Codex", "company": "OpenAI", "capabilities": "自主编码、修bug、跑测试、提PR", "price": "ChatGPT Pro内置"},
+      {"name": "Claude Code", "company": "Anthropic", "capabilities": "终端编码、Agent SDK、Computer Use", "price": "API计费"},
+      {"name": "Google Jules", "company": "Google", "capabilities": "读代码库、写代码、修bug、提PR", "price": "公测中"},
+      {"name": "Amazon Q Developer", "company": "AWS", "capabilities": "自主实现功能、修bug、写测试", "price": "AWS内置"},
+      {"name": "Devin", "company": "Cognition", "capabilities": "全自主软件工程师", "price": "$500/月/席位"},
+      {"name": "Cursor", "company": "Cursor Inc", "capabilities": "AI代码编辑器，2-10x效率", "price": "$20/月"},
+      {"name": "Windsurf", "company": "Codeium", "capabilities": "AI编码IDE，Cascade工作流", "price": "免费+付费"}
+    ],
+    "enterprise_platforms": [
+      {"name": "Microsoft Copilot Studio", "company": "Microsoft", "impact": "多Agent编排，集成ServiceNow/SAP/Salesforce"},
+      {"name": "Salesforce Agentforce", "company": "Salesforce", "impact": "销售/服务/营销/商务的自主Agent"},
+      {"name": "Google A2A Protocol", "company": "Google", "impact": "跨厂商Agent互操作标准（50+合作伙伴）"},
+      {"name": "Anthropic MCP", "company": "Anthropic", "impact": "Agent连接工具和数据的标准"},
+      {"name": "Amazon Q", "company": "AWS", "impact": "企业级AI Agent"}
+    ],
+    "sales_automation": [
+      {"name": "11x.ai", "capabilities": "AI SDR，自动化外呼全流程"},
+      {"name": "Artisan", "capabilities": "AI销售Agent"},
+      {"name": "Regie.ai", "capabilities": "AI内容+外呼自动化"},
+      {"name": "Apollo.io", "capabilities": "AI销售智能平台"}
+    ]
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "last_updated": "2026-06-12",
+    "confidence_level": "high",
+    "data_sources": ["ai-efficiency-expert.md §4.2", "industry-director-b2b-sales.md"],
+    "owner": "industry-director-b2b-sales.md"
+  },
+
+  "position_id": "b2b-sales",
+  "display_name": "B2B销售",
+  "display_name_en": "B2B Sales (SDR/BDR/AE)",
+
+  "sub_types": [
+    {"name": "SDR/BDR", "description": "外呼、线索筛选、邮件序列", "ai_risk_level": "高"},
+    {"name": "AE（中小客户）", "description": "标准产品销售、中小单", "ai_risk_level": "中"},
+    {"name": "AE（大客户）", "description": "方案销售、大单、长周期", "ai_risk_level": "低"},
+    {"name": "销售总监/VP", "description": "团队管理、战略客户、商业决策", "ai_risk_level": "低"}
+  ],
+
+  "ai_impact": {
+    "tasks_replaced": [
+      {"task": "外呼", "ai_tool": "11x.ai、Artisan", "replacement_rate": "60%（SDR外呼全流程）"},
+      {"task": "线索筛选", "ai_tool": "AI SDR工具、CRM+AI", "replacement_rate": "高"},
+      {"task": "邮件序列", "ai_tool": "Regie.ai、AI SDR", "replacement_rate": "高"},
+      {"task": "初步qualification", "ai_tool": "AI SDR工具", "replacement_rate": "中"},
+      {"task": "会议安排", "ai_tool": "AI助手", "replacement_rate": "高"}
+    ],
+    "tasks_enhanced": [
+      {"task": "大客户关系", "how": "AI处理前期线索，人类聚焦深度关系"},
+      {"task": "复杂谈判", "how": "AI提供数据支撑，人类做判断和决策"},
+      {"task": "行业洞察", "how": "AI快速收集信息，人类做深度解读"},
+      {"task": "战略客户规划", "how": "AI分析客户数据，人类制定策略"}
+    ],
+    "efficiency_gain": "外呼效率提升5-10x（AI SDR自动化全流程）",
+    "future_model": "AI+关系型销售——AI处理前期线索，人类聚焦大客户关系和复杂交易",
+    "replacement_mode": {
+      "old_pattern": "SDR手动外呼、筛选线索、发邮件",
+      "new_pattern": "AI SDR自动外呼+筛选，人类聚焦大客户关系",
+      "description": "SDR/BDR岗位正在被AI SDR工具替代"
+    },
+    "data_source": "11x.ai案例、Salesforce Agentforce"
+  },
+
+  "core_competencies": {
+    "irreplaceable": [
+      {"capability": "技术选型能力", "why_ai_cant": "能搞定CTO级别的技术方案沟通", "importance": "⭐⭐⭐⭐⭐"},
+      {"capability": "行业深耕", "why_ai_cant": "懂客户所在行业的业务逻辑", "importance": "⭐⭐⭐⭐⭐"},
+      {"capability": "大客户经营", "why_ai_cant": "能经营年贡献100万+的战略客户", "importance": "⭐⭐⭐⭐⭐"},
+      {"capability": "方案销售", "why_ai_cant": "能卖解决方案而非卖产品", "importance": "⭐⭐⭐⭐"},
+      {"capability": "复杂谈判", "why_ai_cant": "多方利益协调、长周期决策", "importance": "⭐⭐⭐⭐"}
+    ],
+    "being_replaced": [
+      {"capability": "外呼", "ai_tool": "11x.ai/Artisan", "replacement_rate": "60%"},
+      {"capability": "线索筛选", "ai_tool": "AI SDR工具", "replacement_rate": "高"},
+      {"capability": "邮件序列", "ai_tool": "Regie.ai", "replacement_rate": "高"},
+      {"capability": "关系维护（传统）", "ai_tool": "CRM+AI", "replacement_rate": "中"}
+    ]
+  },
+
+  "industry_barriers": [
+    {"barrier": "CTO级别的技术知识", "description": "能和客户技术决策者平等对话", "protection_level": "高"},
+    {"barrier": "行业深度", "description": "懂客户所在行业的业务逻辑和痛点", "protection_level": "高"},
+    {"barrier": "大客户关系", "description": "年贡献100万+的战略客户经营能力", "protection_level": "高"},
+    {"barrier": "方案设计能力", "description": "能设计解决方案而非卖标准产品", "protection_level": "中"}
+  ],
+
+  "salary": {
+    "confidence": "low",
+    "last_updated": "2026-06-30",
+    "data_source": "curated_llm_inference (2026-06, B2B企业软件销售, 招聘网站数据待接入)",
+    "methodology": "基于猎聘/BOSS直聘公开薪资区间，P25-P90为月底薪（元），不含提成/奖金（OTE通常为底薪1.5-3倍）",
+    "limitations": ["sample_size=0表示无真实样本", "销售薪资波动大（提成占比高）", "仅覆盖一线城市", "不含OTE"],
+    "b2b_range": {
+      "sdr_bdr": "8-15K/月（2026年停滞）",
+      "ae_smb": "15-25K/月",
+      "ae_enterprise": "25-45K/月",
+      "sales_director": "40-80K/月",
+      "ceiling": "50-100万/年（销售VP）"
+    },
+    "trend": "SDR薪资停滞，大客户销售薪资上涨",
+    "comparison_note": "B2B销售薪资波动大，底薪+提成模式，大客户销售天花板高于互联网销售",
+    "by_city": {
+      "上海": {"P25": 12000, "P50": 20000, "P75": 35000, "P90": 55000, "sample_size": 0},
+      "北京": {"P25": 13000, "P50": 22000, "P75": 38000, "P90": 58000, "sample_size": 0},
+      "深圳": {"P25": 11000, "P50": 18000, "P75": 32000, "P90": 50000, "sample_size": 0},
+      "杭州": {"P25": 10000, "P50": 17000, "P75": 30000, "P90": 48000, "sample_size": 0},
+      "default": {"P25": 9000, "P50": 15000, "P75": 28000, "P90": 45000, "sample_size": 0}
+    }
+  },
+
+  "transformation_path": [
+    {
+      "stage": "现在",
+      "timeframe": "当前",
+      "role": "SDR/BDR",
+      "core_skills": "外呼、线索筛选、邮件序列",
+      "tools": []
+    },
+    {
+      "stage": "6个月内",
+      "timeframe": "0-6个月",
+      "role": "AI增强型SDR",
+      "core_skills": "用AI SDR工具提效，学习方案销售",
+      "tools": ["11x.ai/Artisan（了解）", "Salesforce Einstein（掌握）"]
+    },
+    {
+      "stage": "12个月内",
+      "timeframe": "6-12个月",
+      "role": "AE（方案销售）",
+      "core_skills": "方案设计、大客户关系、技术选型沟通",
+      "tools": ["Gong/Chorus（通话分析）", "LinkedIn Sales Navigator"]
+    },
+    {
+      "stage": "24个月内",
+      "timeframe": "12-24个月",
+      "role": "大客户销售/销售管理",
+      "core_skills": "战略客户经营、团队管理、商业决策",
+      "tools": ["Clari/Revenue.io（收入预测）"]
+    }
+  ],
+
+  "required_ai_tools": [
+    {"tool": "Salesforce/Einstein", "priority": "必须学", "use_case": "CRM + AI销售助手", "learning_time": "持续使用", "price": "企业采购"},
+    {"tool": "11x.ai/Artisan", "priority": "了解", "use_case": "AI SDR自动化外呼", "learning_time": "1周", "price": "企业采购"},
+    {"tool": "Gong/Chorus", "priority": "建议学", "use_case": "通话分析+AI复盘", "learning_time": "1周", "price": "企业采购"},
+    {"tool": "LinkedIn Sales Navigator", "priority": "建议学", "use_case": "线索挖掘", "learning_time": "1周", "price": "付费"},
+    {"tool": "Clari/Revenue.io", "priority": "可选学", "use_case": "收入预测+流程优化", "learning_time": "2周", "price": "企业采购"}
+  ],
+
+  "anti_intuition_insights": [
+    {
+      "insight": "2026年，能搞定CTO级别技术选型的销售，比有100个客户关系的销售值钱3倍",
+      "evidence": "纯关系型销售正在被淘汰，方案型销售需求上升",
+      "implication": "不要再花时间维护关系，转向培养技术选型沟通能力"
+    },
+    {
+      "insight": "SDR这个岗位在2026年的AI替代率已经达到60%",
+      "evidence": "11x.ai、Artisan等AI SDR工具正在替代外呼全流程",
+      "implication": "如果你现在是SDR，1年内必须转型为AE或解决方案销售"
+    },
+    {
+      "insight": "B2B大客户的客单价在2026年提升了30%，但销售周期拉长了2个月",
+      "evidence": "行业报告、Salesforce数据",
+      "implication": "能缩短销售周期的人更值钱，AI工具可以帮助加速前期流程"
+    }
+  ]
+}
