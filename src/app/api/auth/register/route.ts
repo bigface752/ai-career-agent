@@ -10,13 +10,24 @@ import {
   sendVerificationEmail,
   validatePasswordStrength,
 } from "@/lib/auth";
+import { createRouteLogger } from "@/lib/logger";
+
+const log = createRouteLogger("auth/register");
 
 // 验证码有效期（10分钟）
 const CODE_EXPIRY_MINUTES = 10;
 
+// 邀请码业务错误（事务内抛出，外层捕获返回友好提示）
+class InviteCodeError extends Error {
+  constructor(public code: string, message: string) {
+    super(message);
+    this.name = "InviteCodeError";
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json();
+    const { email, password, inviteCode } = await req.json();
 
     // 校验输入
     if (!email || !password) {
@@ -26,62 +37,109 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 邀请码验证（灰度阶段必填）
+    if (!inviteCode || typeof inviteCode !== "string") {
+      return NextResponse.json(
+        { error: "请输入邀请码" },
+        { status: 400 }
+      );
+    }
+
+    const normalizedCode = inviteCode.trim().toUpperCase();
+
     const passwordError = validatePasswordStrength(password);
     if (passwordError) {
       return NextResponse.json({ error: passwordError }, { status: 400 });
     }
 
-    // 检查邮箱是否已注册
+    // 检查邮箱是否已注册（事务外，只读）
     const existingUser = await db.user.findUnique({ where: { email } });
 
-    let user;
-    if (existingUser) {
-      // 已注册但未验证：允许重新注册（更新密码）
-      if (existingUser.emailVerified) {
-        return NextResponse.json(
-          { error: "该邮箱已注册，请直接登录" },
-          { status: 409 }
-        );
-      }
-      // 更新密码
-      const passwordHash = await hashPassword(password);
-      user = await db.user.update({
-        where: { id: existingUser.id },
-        data: { passwordHash },
-      });
-    } else {
-      // 新用户
-      const passwordHash = await hashPassword(password);
-      user = await db.user.create({
-        data: { email, passwordHash },
-      });
+    if (existingUser?.emailVerified) {
+      return NextResponse.json(
+        { error: "该邮箱已注册，请直接登录" },
+        { status: 409 }
+      );
     }
 
-    // 生成验证码
-    const code = generateVerificationCode();
-    const expiresAt = new Date(Date.now() + CODE_EXPIRY_MINUTES * 60 * 1000);
+    // 事务：邀请码条件消耗 + 用户创建/更新 + 验证码生成
+    // 用条件更新消除 TOCTOU 竞态（P0-2）
+    const result = await db.$transaction(async (tx) => {
+      // 1. 条件消耗邀请码（原子操作，WHERE use_count < max_uses）
+      const consumeResult = await tx.$executeRaw`
+        UPDATE invite_codes
+        SET use_count = use_count + 1
+        WHERE code = ${normalizedCode}
+          AND use_count < max_uses
+          AND (expires_at IS NULL OR expires_at > datetime('now'))
+      `;
 
-    await db.emailVerification.create({
-      data: {
-        userId: user.id,
-        code,
-        type: "register",
-        expiresAt,
-      },
+      if (consumeResult === 0) {
+        throw new InviteCodeError("INVALID", "邀请码无效或已用完");
+      }
+
+      // 2. 获取邀请码记录
+      const invite = await tx.inviteCode.findUnique({
+        where: { code: normalizedCode },
+      });
+      if (!invite) {
+        throw new InviteCodeError("INVALID", "邀请码不存在");
+      }
+
+      // 3. 创建或更新用户
+      let user;
+      if (existingUser) {
+        const passwordHash = await hashPassword(password);
+        user = await tx.user.update({
+          where: { id: existingUser.id },
+          data: { passwordHash },
+        });
+        // 已有邀请码使用记录则跳过（P1-1）
+        const existingUsage = await tx.inviteCodeUsage.findUnique({
+          where: { codeId_userId: { codeId: invite.id, userId: user.id } },
+        });
+        if (!existingUsage) {
+          await tx.inviteCodeUsage.create({
+            data: { codeId: invite.id, userId: user.id },
+          });
+        }
+      } else {
+        const passwordHash = await hashPassword(password);
+        user = await tx.user.create({
+          data: { email, passwordHash },
+        });
+        await tx.inviteCodeUsage.create({
+          data: { codeId: invite.id, userId: user.id },
+        });
+      }
+
+      // 4. 生成验证码
+      const code = generateVerificationCode();
+      const expiresAt = new Date(Date.now() + CODE_EXPIRY_MINUTES * 60 * 1000);
+      await tx.emailVerification.create({
+        data: { userId: user.id, code, type: "register", expiresAt },
+      });
+
+      return { user, code };
     });
 
     // 发送验证码邮件
-    const sent = await sendVerificationEmail(email, code);
+    const sent = await sendVerificationEmail(email, result.code);
     if (!sent) {
-      console.log(`[DEV] 验证码 ${code} -> ${email}`);
+      console.log(`[DEV] 验证码 ${result.code} -> ${email}`);
     }
+
+    log.info("注册成功", { userId: result.user.id });
 
     return NextResponse.json({
       message: "验证码已发送到邮箱",
-      userId: user.id,
+      userId: result.user.id,
     });
   } catch (error) {
-    console.error("注册失败:", error);
+    if (error instanceof InviteCodeError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    log.error("注册失败", { err: error as Error });
     return NextResponse.json(
       { error: "注册失败，请稍后重试" },
       { status: 500 }

@@ -35,6 +35,9 @@ import {
 } from "@/lib/dialogue";
 import { getSlotsForModule, getRequiredSlotsForModule } from "@/lib/dialogue/slots";
 import type { SlotState, DialogueTurn } from "@/lib/dialogue/types";
+import { createRouteLogger } from "@/lib/logger";
+
+const log = createRouteLogger("dialogue/message");
 
 // ============================================================
 // 增量提取 Schema
@@ -240,7 +243,11 @@ export async function POST(req: NextRequest) {
     }
   } catch (error) {
     // 提取失败不阻塞对话，继续生成回复
-    console.error("Slot 提取失败:", error);
+    log.warn("Slot 提取失败（非阻塞）", {
+      userId: user.id,
+      sessionId: session.id,
+      err: error as Error,
+    });
   }
 
   // 7. 更新对话阶段
@@ -287,7 +294,11 @@ export async function POST(req: NextRequest) {
       roundNumber: newRound,
     });
   } catch (error) {
-    console.error("[dialogue/message] 预保存状态失败:", error);
+    log.warn("预保存状态失败（非阻塞）", {
+      userId: user.id,
+      sessionId: session.id,
+      err: error as Error,
+    });
     // 不阻塞流式响应，继续执行
   }
 
@@ -316,19 +327,20 @@ export async function POST(req: NextRequest) {
           return; // 成功，退出
         } catch (error) {
           const isLastAttempt = attempt === MAX_RETRIES;
-          console.error(
-            `[dialogue/message] onFinish 保存失败 (attempt ${attempt}/${MAX_RETRIES}):`,
-            {
+          if (isLastAttempt) {
+            log.error("onFinish 最终保存失败，AI回复可能丢失", {
+              userId: user.id,
               sessionId: session.id,
               round: newRound,
-              error: error instanceof Error ? error.message : String(error),
-            }
-          );
-          if (isLastAttempt) {
-            console.error(
-              `[dialogue/message] onFinish 最终保存失败，AI回复可能丢失: sessionId=${session.id}, round=${newRound}`
-            );
+              err: error as Error,
+            });
           } else {
+            log.warn(`onFinish 保存失败，重试中 (${attempt}/${MAX_RETRIES})`, {
+              userId: user.id,
+              sessionId: session.id,
+              round: newRound,
+              err: error as Error,
+            });
             await new Promise((r) => setTimeout(r, 500));
           }
         }

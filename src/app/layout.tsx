@@ -16,8 +16,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "AI Career Agent",
-  description: "AI 职业智囊 — 基于多 Agent 系统的职业决策产品",
+  title: "跳不跳",
+  description: "跳不跳 — AI 驱动的职业决策平台",
 };
 
 export default function RootLayout({

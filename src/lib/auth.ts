@@ -121,7 +121,7 @@ export async function sendVerificationEmail(
     await getResend().emails.send({
       from: FROM_EMAIL,
       to: email,
-      subject: "AI Career Agent - 验证码",
+      subject: "跳不跳 - 验证码",
       html: `
         <div style="font-family: sans-serif; max-width: 400px; margin: 0 auto;">
           <h2>验证码</h2>
@@ -148,7 +148,7 @@ export async function sendPasswordResetEmail(
     await getResend().emails.send({
       from: FROM_EMAIL,
       to: email,
-      subject: "AI Career Agent - 密码重置验证码",
+      subject: "跳不跳 - 密码重置验证码",
       html: `
         <div style="font-family: sans-serif; max-width: 400px; margin: 0 auto;">
           <h2>密码重置</h2>

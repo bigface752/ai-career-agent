@@ -10,6 +10,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyPassword, signJWT, getTokenCookieHeader } from "@/lib/auth";
+import { createRouteLogger } from "@/lib/logger";
+
+const log = createRouteLogger("auth/login");
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 30;
@@ -133,7 +136,7 @@ export async function POST(req: NextRequest) {
 
     return res;
   } catch (error) {
-    console.error("登录失败:", error);
+    log.error("登录失败", { err: error as Error });
     return NextResponse.json(
       { error: "登录失败，请稍后重试" },
       { status: 500 }

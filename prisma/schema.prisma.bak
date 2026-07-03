@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model agent_roles {
+  id                    String   @id
+  name                  String
+  type                  String
+  module                String?
+  system_prompt         String
+  analysis_dimensions   String?
+  applicable_industries String?
+  version               Int      @default(1)
+  updated_at            DateTime @default(now())
+}
+
+model device_sessions {
+  id             String    @id
+  user_id        String
+  device_info    String?
+  created_at     DateTime  @default(now())
+  last_active_at DateTime?
+  users          users     @relation(fields: [user_id], references: [id])
+}
+
+model dialogue_messages {
+  id                String            @id
+  session_id        String
+  role              String
+  agent_id          String?
+  content           String
+  extracted_info    String?
+  created_at        DateTime          @default(now())
+  dialogue_sessions dialogue_sessions @relation(fields: [session_id], references: [id])
+}
+
+model dialogue_sessions {
+  id                     String                   @id
+  user_id                String
+  module                 String
+  status                 String                   @default("active")
+  slot_state             String?
+  recent_window          String?
+  initial_findings       String?
+  round_number           Int                      @default(0)
+  context_json           String?
+  created_at             DateTime                 @default(now())
+  updated_at             DateTime                 @default(now())
+  expires_at             DateTime?
+  dialogue_messages      dialogue_messages[]
+  users                  users                    @relation(fields: [user_id], references: [id])
+  evaluations            evaluations[]
+  portrait_update_logs   portrait_update_logs[]
+  reports                reports[]
+  roundtable_discussions roundtable_discussions[]
+}
+
+model email_verifications {
+  id         String    @id
+  user_id    String
+  code       String
+  type       String
+  expires_at DateTime?
+  used       Boolean   @default(false)
+  attempts   Int       @default(0)
+  created_at DateTime  @default(now())
+  users      users     @relation(fields: [user_id], references: [id])
+}
+
+model evaluations {
+  id                String            @id
+  user_id           String
+  session_id        String
+  result_json       String
+  overall_rating    String
+  overall_score     Float
+  created_at        DateTime          @default(now())
+  dialogue_sessions dialogue_sessions @relation(fields: [session_id], references: [id])
+  users             users             @relation(fields: [user_id], references: [id])
+
+  @@index([user_id, session_id, created_at])
+}
+
+model interview_sessions {
+  id                     String    @id
+  user_id                String
+  jd_id                  String?
+  status                 String    @default("not_started")
+  questions              String
+  current_question_index Int       @default(0)
+  answered_questions     String?
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @default(now())
+  expires_at             DateTime?
+  users                  users     @relation(fields: [user_id], references: [id])
+}
+
+model notifications {
+  id         String   @id
+  user_id    String
+  type       String
+  title      String
+  content    String
+  session_id String?
+  read       Boolean  @default(false)
+  created_at DateTime @default(now())
+  users      users    @relation(fields: [user_id], references: [id])
+}
+
+model pending_updates {
+  id             String    @id
+  user_id        String
+  field          String
+  current_value  String?
+  proposed_value String?
+  source         String
+  session_id     String?
+  status         String    @default("pending")
+  resolved_at    DateTime?
+  created_at     DateTime  @default(now())
+  users          users     @relation(fields: [user_id], references: [id])
+}
+
+model portrait_corrections {
+  id         String   @id
+  user_id    String
+  field      String
+  old_value  String?
+  new_value  String?
+  reason     String?
+  status     String   @default("pending")
+  created_at DateTime @default(now())
+  users      users    @relation(fields: [user_id], references: [id])
+}
+
+model portrait_update_logs {
+  id                String             @id
+  user_id           String
+  session_id        String?
+  trigger           String
+  changes           String
+  created_at        DateTime           @default(now())
+  dialogue_sessions dialogue_sessions? @relation(fields: [session_id], references: [id])
+  users             users              @relation(fields: [user_id], references: [id])
+}
+
+model portraits {
+  id            String   @id
+  user_id       String   @unique
+  portrait_json String
+  template_json String?
+  completion    Float    @default(0)
+  updated_at    DateTime @default(now())
+  users         users    @relation(fields: [user_id], references: [id])
+}
+
+model reports {
+  id                 String             @id
+  user_id            String
+  session_id         String?
+  module             String
+  report_type        String
+  content            String
+  satisfaction_score Int?
+  feedback_text      String?
+  created_at         DateTime           @default(now())
+  dialogue_sessions  dialogue_sessions? @relation(fields: [session_id], references: [id])
+  users              users              @relation(fields: [user_id], references: [id])
+}
+
+model roundtable_discussions {
+  id                String            @id
+  session_id        String
+  module            String
+  participants      String
+  rounds            String
+  consensus         String?
+  disagreements     String?
+  risk_warning      String?
+  recommendation    String?
+  risk_rating       String?
+  conclusion        String?
+  created_at        DateTime          @default(now())
+  dialogue_sessions dialogue_sessions @relation(fields: [session_id], references: [id])
+}
+
+model users {
+  id                   String                 @id
+  email                String                 @unique
+  password_hash        String
+  name                 String?
+  email_verified       Boolean                @default(false)
+  created_at           DateTime               @default(now())
+  last_active_at       DateTime?
+  login_attempts       Int                    @default(0)
+  locked_until         DateTime?
+  device_sessions      device_sessions[]
+  dialogue_sessions    dialogue_sessions[]
+  email_verifications  email_verifications[]
+  evaluations          evaluations[]
+  interview_sessions   interview_sessions[]
+  notifications        notifications[]
+  pending_updates      pending_updates[]
+  portrait_corrections portrait_corrections[]
+  portrait_update_logs portrait_update_logs[]
+  portraits            portraits?
+  reports              reports[]
+}

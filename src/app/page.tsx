@@ -66,10 +66,10 @@ export default function Home() {
       <div className="p-8 max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
-            AI Career Agent
+            跳不跳
           </h1>
           <p className="mt-2 text-neutral-600 dark:text-neutral-400">
-            AI 职业智囊 — 基于多 Agent 系统的职业决策产品
+            AI 驱动的职业决策平台
           </p>
         </div>
 

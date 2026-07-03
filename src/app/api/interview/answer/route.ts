@@ -12,6 +12,9 @@ import { NextRequest } from "next/server";
 import { getAuthUser } from "@/lib/middleware/auth";
 import { AnswerInputSchema } from "@/lib/interview/schema";
 import { processAnswer } from "@/lib/interview/answer";
+import { createRouteLogger } from "@/lib/logger";
+
+const log = createRouteLogger("interview/answer");
 
 export async function POST(req: NextRequest) {
   // 1. Auth
@@ -109,7 +112,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 未知错误
-    console.error("[interview/answer] Process answer failed:", msg);
+    log.error("Process answer failed", { userId: user.id, err: err as Error });
     return Response.json(
       { error: "INTERNAL_ERROR", message: "处理回答失败，请重试" },
       { status: 500 }

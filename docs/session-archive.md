@@ -925,3 +925,53 @@ Task L4 — 面试辅导前端页面（模块三最后一步）
 - [x] 上线规划完成（Phase 0-7）
 
 *归档自 SESSION.md，2026-07-01*
+
+---
+
+## 会话 2026-07-02：Phase 3 测试体系
+
+### 完成任务
+- [x] 3.1 安装 Vitest + 配置（vitest.config.ts + package.json scripts）
+- [x] 3.2 P0 测试用例（认证、对话核心流程）— auth.ts + slot-state.ts
+- [x] 3.3 P1 测试用例（面试、匹配、评估）— consensus.ts + interview/schema.ts
+- [x] 3.4 P2 测试用例（边界情况、错误处理）— edge-cases.test.ts
+- [x] 3.5 验证 npm run build 通过（62 页面全部生成）
+- [x] 3.6 对抗性审查（12 项发现，修复 6 项，记录 4 项已知限制）
+
+### 测试覆盖
+
+| 测试文件 | 测试数 | 覆盖范围 |
+|----------|--------|----------|
+| tests/lib/auth.test.ts | 31 | 密码哈希、JWT、验证码、密码强度、Cookie |
+| tests/lib/dialogue/slot-state.test.ts | 74 | Slot 创建/填充/查询、问题追踪、进度计算、流程控制 |
+| tests/lib/evaluation/consensus.test.ts | 11 | majorityVote 共识算法 |
+| tests/lib/interview/schema.test.ts | 16 | Zod Schema 验证（轮次、题目、输入输出） |
+| tests/lib/edge-cases.test.ts | 18 | 边界情况（特殊字符、Unicode、不可变性等） |
+| **合计** | **150** | |
+
+### 对抗性审查结果
+
+| # | 严重度 | 问题 | 处理 |
+|---|--------|------|------|
+| 1 | 🔴 | addTurnToWindow 断言阈值错误（RECENT_WINDOW_SIZE=3，测试写 6） | ✅ 已修 |
+| 2 | 🔴 | fillSlot 不可变性测试不充分 | ✅ 已修 |
+| 3 | 🔴 | TEST_SLOTS 缺少 type/default_question 必填字段 | ✅ 已修 |
+| 4 | 🟡 | consensus.test.ts 未测试 runWithConsensus 主函数 | 已知限制 |
+| 5 | 🟡 | edge-cases 测试名与行为不匹配 | ✅ 已修 |
+| 6 | 🟡 | majorityVote 依赖 Object.entries 排序稳定性 | 已知限制 |
+| 7 | 🟡 | 不同测试文件使用不同 JWT_SECRET | ✅ 已修：pool: 'forks' |
+| 8 | 🟡 | 缺少 sendVerificationEmail 测试 | 已知限制 |
+| 9 | 🟡 | getUsedQuestionVariants 无测试覆盖 | ✅ 已修 |
+| 10 | 🟢 | validatePasswordStrength 错误消息用中文硬编码 | 已知限制 |
+| 11 | 🟢 | fillSlot 改口场景未验证旧值保留 | ✅ 已修 |
+| 12 | 🟢 | 覆盖率配置未排除 types.ts | ✅ 已修 |
+
+### 新增文件
+- vitest.config.ts
+- tests/lib/auth.test.ts
+- tests/lib/dialogue/slot-state.test.ts
+- tests/lib/evaluation/consensus.test.ts
+- tests/lib/interview/schema.test.ts
+- tests/lib/edge-cases.test.ts
+
+*归档自 SESSION.md，2026-07-02*

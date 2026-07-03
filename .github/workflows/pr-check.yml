@@ -1,0 +1,43 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Prisma Client 必须在 lint/typecheck/build 前生成
+      - run: npx prisma generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type Check
+        run: npm run typecheck
+
+      - name: Test
+        run: npm run test
+        env:
+          JWT_SECRET: ci-dummy-secret-for-testing
+
+      - name: Build
+        run: npm run build
+        env:
+          DATABASE_URL: file:./ci.db
+          JWT_SECRET: ci-dummy-jwt-secret-for-build-verification-only
+          NODE_ENV: production

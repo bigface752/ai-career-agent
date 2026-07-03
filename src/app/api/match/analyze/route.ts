@@ -11,6 +11,9 @@ import { getAuthUser } from "@/lib/middleware/auth";
 import { db } from "@/lib/db";
 import { buildMatchInput, analyzeMatch } from "@/lib/match/analyzer";
 import type { MatchAnalyzeResponse } from "@/lib/match/schema";
+import { createRouteLogger } from "@/lib/logger";
+
+const log = createRouteLogger("match/analyze");
 
 export async function POST(req: NextRequest) {
   // 1. Auth
@@ -66,7 +69,7 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       );
     }
-    console.error("[match-analyze] Build input failed:", msg);
+    log.error("Build input failed", { userId: user.id, jdId: jd_id, err: err as Error });
     return Response.json(
       { error: "INTERNAL_ERROR", message: "构建分析输入失败" },
       { status: 500 }
@@ -78,7 +81,7 @@ export async function POST(req: NextRequest) {
   try {
     result = await analyzeMatch(input);
   } catch (err) {
-    console.error("[match-analyze] AI analysis failed:", err);
+    log.error("AI analysis failed", { userId: user.id, jdId: jd_id, err: err as Error });
     return Response.json(
       { error: "ANALYSIS_FAILED", message: "匹配分析失败，请重试" },
       { status: 500 }
@@ -103,7 +106,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (dbErr) {
-    console.error("[match-analyze] DB write failed:", dbErr);
+    log.error("DB write failed", { userId: user.id, jdId: jd_id, err: dbErr as Error });
     return Response.json(
       { error: "DB_ERROR", message: "保存匹配结果失败，请重试" },
       { status: 500 }
