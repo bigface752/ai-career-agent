@@ -1,117 +1,131 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+/**
+ * /journey — 统一旅程页面
+ *
+ * V1.2 重写：旅程即对话，步骤是对话的章节。
+ * 使用 useJourney 管理状态，StepContent 渲染步骤内容。
+ */
+
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import { JourneyProgress } from "@/components/journey/JourneyProgress";
-import { JourneyStep } from "@/components/journey/JourneyStep";
+import { StepContent } from "@/components/journey/StepContent";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
-import type { JourneyStepName } from "@/lib/journey-steps";
+import { useJourney } from "@/hooks/useJourney";
+import { STEP_META, JOURNEY_STEP_ORDER, type JourneyStepName } from "@/lib/journey-steps";
 
-interface JourneySession {
-  id: string;
-  currentStep: JourneyStepName;
-  stepStatus: "pending" | "in_progress" | "completed";
-  completedSteps: JourneyStepName[];
-  version: number;
-}
+// ============================================================
+// Auto-advance 配置
+// ============================================================
 
-interface StepProgress {
-  allowed: boolean;
-  missing: string[];
-  progress: number;
-}
+/** 自动推进的步骤映射：当前步骤完成后，自动推进到下一步 */
+const AUTO_ADVANCE_STEPS: JourneyStepName[] = ["intake"];
+
+/** 自动推进延迟（ms），给用户看通知的时间 */
+const AUTO_ADVANCE_DELAY = 3000;
+
+// ============================================================
+// Page Component
+// ============================================================
 
 export default function JourneyPage() {
   const router = useRouter();
-  const [session, setSession] = useState<JourneySession | null>(null);
-  const [stepProgress, setStepProgress] = useState<StepProgress | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [starting, setStarting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const errorTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const {
+    session,
+    stepProgress,
+    loading,
+    error: journeyError,
+    loadStatus,
+    startJourney,
+    advanceStep,
+    rollbackStep,
+  } = useJourney();
 
-  /** 统一错误处理 */
-  const handleError = useCallback((error: string) => {
-    // 清除之前的定时器
-    if (errorTimerRef.current) {
-      clearTimeout(errorTimerRef.current);
-    }
-    setError(error);
-    errorTimerRef.current = setTimeout(() => setError(null), 3000);
-  }, []);
-
-  /** 统一 401 处理 */
-  const handleAuthError = useCallback((status: number) => {
-    if (status === 401) {
-      router.push("/login");
-      return true;
-    }
-    return false;
-  }, [router]);
-
-  /** 加载旅程状态 */
-  const loadJourneyStatus = useCallback(async () => {
-    try {
-      const res = await fetch("/api/journey/status");
-      if (handleAuthError(res.status)) return;
-      if (!res.ok) {
-        throw new Error("加载失败");
-      }
-      const data = await res.json();
-      setSession(data.session);
-      setStepProgress(data.stepProgress);
-    } catch (err) {
-      handleError(err instanceof Error ? err.message : "加载失败");
-    } finally {
-      setLoading(false);
-    }
-  }, [handleAuthError, handleError]);
-
-  /** 创建新旅程 */
-  const handleStartJourney = async () => {
-    if (starting) return;
-    setStarting(true);
-    try {
-      const res = await fetch("/api/journey/start", {
-        method: "POST",
-      });
-      if (handleAuthError(res.status)) return;
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "创建失败");
-      }
-      const data = await res.json();
-      setSession(data.session);
-      // 重新加载步骤进度
-      await loadJourneyStatus();
-    } catch (err) {
-      handleError(err instanceof Error ? err.message : "创建失败");
-    } finally {
-      setStarting(false);
-    }
-  };
-
-  /** 回退成功回调 */
-  const handleRollback = async () => {
-    await loadJourneyStatus();
-  };
-
-  /** 步骤操作成功回调 */
-  const handleStepAction = async () => {
-    await loadJourneyStatus();
-  };
+  // ============================================================
+  // Load on mount
+  // ============================================================
 
   useEffect(() => {
-    loadJourneyStatus();
-    // 清理定时器
-    return () => {
-      if (errorTimerRef.current) {
-        clearTimeout(errorTimerRef.current);
+    loadStatus();
+  }, [loadStatus]);
+
+  // ============================================================
+  // Auth error handling
+  // ============================================================
+
+  useEffect(() => {
+    if (journeyError === "未认证") {
+      router.push("/login");
+    }
+  }, [journeyError, router]);
+
+  // ============================================================
+  // Step complete callback → auto-advance
+  // ============================================================
+
+  const [autoAdvanceNotice, setAutoAdvanceNotice] = useState<string | null>(null);
+
+  const handleStepComplete = useCallback(
+    async (step: JourneyStepName) => {
+      // 先标记当前步骤完成
+      const marked = await fetch("/api/journey/step", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          stepStatus: "completed",
+          version: session?.version,
+        }),
+      }).then((r) => r.ok);
+
+      if (!marked) {
+        // 版本冲突或其他错误，刷新状态
+        await loadStatus();
+        return;
       }
-    };
-  }, [loadJourneyStatus]);
+
+      // 刷新状态
+      await loadStatus();
+
+      // 自动推进
+      if (AUTO_ADVANCE_STEPS.includes(step)) {
+        const nextStepName = STEP_META[getNextStepName(step) ?? "diagnosis"]?.label;
+        setAutoAdvanceNotice(`${STEP_META[step].label}完成，正在进入${nextStepName}...`);
+
+        setTimeout(async () => {
+          setAutoAdvanceNotice(null);
+          await advanceStep(true, `auto_advance_after_${step}`);
+        }, AUTO_ADVANCE_DELAY);
+      }
+    },
+    [session, loadStatus, advanceStep]
+  );
+
+  // ============================================================
+  // Rollback callback
+  // ============================================================
+
+  const handleRollback = useCallback(async () => {
+    await rollbackStep();
+  }, [rollbackStep]);
+
+  // ============================================================
+  // Error callback
+  // ============================================================
+
+  const [panelError, setPanelError] = useState<string | null>(null);
+
+  const handlePanelError = useCallback((error: string) => {
+    setPanelError(error);
+    // 3s 后自动清除
+    setTimeout(() => setPanelError(null), 3000);
+  }, []);
+
+  // ============================================================
+  // Render
+  // ============================================================
 
   if (loading) {
     return (
@@ -128,14 +142,24 @@ export default function JourneyPage() {
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
       <Navbar />
       <main className="max-w-3xl mx-auto px-4 py-8">
+        {/* 页面标题 */}
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-6">
           职业决策旅程
         </h1>
 
         {/* 错误提示 */}
-        {error && (
+        {(journeyError || panelError) && (
           <div className="mb-4 p-4 bg-error/10 border border-error/20 rounded-lg">
-            <p className="text-sm text-error">{error}</p>
+            <p className="text-sm text-error">{journeyError || panelError}</p>
+          </div>
+        )}
+
+        {/* 自动推进通知 */}
+        {autoAdvanceNotice && (
+          <div className="mb-4 p-4 bg-primary-50 dark:bg-primary-950/50 border border-primary-200 dark:border-primary-800 rounded-lg">
+            <p className="text-sm text-primary-700 dark:text-primary-300">
+              {autoAdvanceNotice}
+            </p>
           </div>
         )}
 
@@ -159,7 +183,7 @@ export default function JourneyPage() {
                   <ul className="space-y-2 text-sm text-neutral-600 dark:text-neutral-400">
                     <li className="flex items-start">
                       <span className="mr-2">1.</span>
-                      <span><strong>信息采集</strong> - 了解你的职业背景和现状</span>
+                      <span><strong>信息采集</strong> - 通过对话了解你的职业背景和现状</span>
                     </li>
                     <li className="flex items-start">
                       <span className="mr-2">2.</span>
@@ -175,8 +199,8 @@ export default function JourneyPage() {
                     </li>
                   </ul>
                 </div>
-                <Button onClick={handleStartJourney} disabled={starting} className="w-full">
-                  {starting ? "创建中..." : "开始旅程"}
+                <Button onClick={startJourney} className="w-full">
+                  开始旅程
                 </Button>
               </div>
             </CardContent>
@@ -194,22 +218,29 @@ export default function JourneyPage() {
               version={session.version}
               stepProgress={stepProgress ?? undefined}
               onRollback={handleRollback}
-              onError={handleError}
+              onError={handlePanelError}
             />
 
-            {/* 当前步骤 */}
-            <JourneyStep
+            {/* 步骤内容 */}
+            <StepContent
               currentStep={session.currentStep}
               stepStatus={session.stepStatus}
-              stepProgress={stepProgress ?? undefined}
-              version={session.version}
-              onStart={handleStepAction}
-              onComplete={handleStepAction}
-              onError={handleError}
+              onStepComplete={handleStepComplete}
+              onError={handlePanelError}
             />
           </div>
         )}
       </main>
     </div>
   );
+}
+
+// ============================================================
+// Helpers
+// ============================================================
+
+function getNextStepName(current: JourneyStepName): JourneyStepName | null {
+  const idx = JOURNEY_STEP_ORDER.indexOf(current);
+  if (idx < 0 || idx >= JOURNEY_STEP_ORDER.length - 1) return null;
+  return JOURNEY_STEP_ORDER[idx + 1];
 }

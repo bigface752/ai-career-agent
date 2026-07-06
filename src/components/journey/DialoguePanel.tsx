@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef, FormEvent, KeyboardEvent } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+/**
+ * DialoguePanel — 嵌入式对话面板
+ *
+ * 从 /dialogue/page.tsx 提取，作为 /journey 页面的 intake 步骤内容。
+ * 复用 useDialogue hook，不改变对话引擎逻辑。
+ */
+
+import { useState, useEffect, useRef, FormEvent, KeyboardEvent, useCallback } from "react";
 import { useDialogue } from "@/hooks/useDialogue";
 import type { ChatMessage } from "@/hooks/useDialogue";
-import { Navbar } from "@/components/Navbar";
 
 // ============================================================
 // Types
@@ -18,40 +22,22 @@ interface ExistingSession {
   filledCount: number;
   requiredCount: number;
   pendingSlots: string[];
-  recentWindow: { role: string; content: string; turn: number }[];
 }
 
-type PageState = "loading" | "resume-prompt" | "active" | "error";
-
-// ============================================================
-// Main Page
-// ============================================================
-
-export default function DialoguePage() {
-  return (
-    <div className="min-h-screen bg-white dark:bg-neutral-950">
-      {/* V1.2 Deprecation Notice */}
-      <div className="bg-primary-50 dark:bg-primary-950/50 border-b border-primary-200 dark:border-primary-800 px-4 py-2.5">
-        <p className="max-w-3xl mx-auto text-sm text-primary-700 dark:text-primary-300 text-center">
-          💡 对话已整合到旅程页面，体验更流畅。
-          <Link
-            href="/journey"
-            className="ml-1 font-medium underline hover:text-primary-800 dark:hover:text-primary-200"
-          >
-            前往新页面 →
-          </Link>
-        </p>
-      </div>
-      <DialogueView />
-    </div>
-  );
+interface DialoguePanelProps {
+  /** 对话完成回调（slot 填充率 100% 时触发） */
+  onComplete?: (sessionId: string) => void;
+  /** 错误回调 */
+  onError?: (error: string) => void;
 }
 
+type PanelState = "loading" | "resume-prompt" | "active" | "error";
+
 // ============================================================
-// Dialogue View (Client Component)
+// Component
 // ============================================================
 
-function DialogueView() {
+export function DialoguePanel({ onComplete, onError }: DialoguePanelProps) {
   const {
     messages,
     setMessages,
@@ -65,15 +51,12 @@ function DialogueView() {
     setError,
   } = useDialogue();
 
-  const router = useRouter();
-  const [pageState, setPageState] = useState<PageState>("loading");
-  const [existingSession, setExistingSession] =
-    useState<ExistingSession | null>(null);
+  const [panelState, setPanelState] = useState<PanelState>("loading");
+  const [existingSession, setExistingSession] = useState<ExistingSession | null>(null);
   const [input, setInput] = useState("");
-  const [isEvaluating, setIsEvaluating] = useState(false);
-  const evaluatingRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const onCompleteCalledRef = useRef(false);
 
   // ============================================================
   // Check for existing session on mount
@@ -95,15 +78,15 @@ function DialogueView() {
 
         if (data.session && data.session.status !== "expired") {
           setExistingSession(data.session);
-          setPageState("resume-prompt");
+          setPanelState("resume-prompt");
         } else {
-          setPageState("resume-prompt"); // No existing session, show start option
+          setPanelState("resume-prompt");
         }
       } catch (err) {
         if (!cancelled) {
           console.error("检查会话失败:", err);
           setError("无法检查会话状态，请刷新重试");
-          setPageState("error");
+          setPanelState("error");
         }
       }
     }
@@ -123,44 +106,27 @@ function DialogueView() {
   }, [messages, streamedText]);
 
   // ============================================================
-  // Trigger evaluation
+  // Check slot completion → trigger onComplete
   // ============================================================
 
-  async function handleEvaluate() {
-    if (!session?.sessionId || evaluatingRef.current) return;
-
-    // 同步锁，防止快速双击
-    evaluatingRef.current = true;
-    setIsEvaluating(true);
-    setError(null);
-
-    try {
-      const res = await fetch("/api/evaluation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId: session.sessionId }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "评估失败");
-      }
-
-      router.push(`/evaluation?sessionId=${session.sessionId}`);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "评估失败，请重试";
-      setError(msg);
-      evaluatingRef.current = false;
-      setIsEvaluating(false);
+  useEffect(() => {
+    if (
+      session &&
+      session.filledCount >= session.requiredCount &&
+      session.requiredCount > 0 &&
+      !onCompleteCalledRef.current
+    ) {
+      onCompleteCalledRef.current = true;
+      onComplete?.(session.sessionId);
     }
-  }
+  }, [session, onComplete]);
 
   // ============================================================
   // Start new session
   // ============================================================
 
-  async function handleStartNew() {
-    setPageState("loading");
+  const handleStartNew = useCallback(async () => {
+    setPanelState("loading");
     setError(null);
 
     try {
@@ -173,9 +139,8 @@ function DialogueView() {
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         if (data.code === "SESSION_EXISTS" && data.session) {
-          // Race condition: session was created between our check and start
           setExistingSession(data.session);
-          setPageState("resume-prompt");
+          setPanelState("resume-prompt");
           return;
         }
         throw new Error(data.error || "创建会话失败");
@@ -191,25 +156,25 @@ function DialogueView() {
         pendingSlots: data.pendingSlots,
       });
       setMessages([]);
-      setPageState("active");
+      setPanelState("active");
 
-      // Focus input after entering active state
       setTimeout(() => inputRef.current?.focus(), 100);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "创建会话失败";
       setError(msg);
-      setPageState("error");
+      setPanelState("error");
+      onError?.(msg);
     }
-  }
+  }, [setSession, setMessages, setError, onError]);
 
   // ============================================================
   // Resume existing session
   // ============================================================
 
-  async function handleResume() {
+  const handleResume = useCallback(async () => {
     if (!existingSession) return;
 
-    setPageState("loading");
+    setPanelState("loading");
     setError(null);
 
     try {
@@ -226,7 +191,6 @@ function DialogueView() {
 
       const data = await res.json();
 
-      // Restore messages from DB (complete history)
       const restoredMessages: ChatMessage[] = (data.messages || []).map(
         (msg: { role: string; content: string; createdAt: string }, i: number) => ({
           id: `restored-${i}`,
@@ -245,30 +209,30 @@ function DialogueView() {
         pendingSlots: data.pendingSlots,
       });
       setMessages(restoredMessages);
-      setPageState("active");
+      setPanelState("active");
 
       setTimeout(() => inputRef.current?.focus(), 100);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "恢复会话失败";
       setError(msg);
-      setPageState("error");
+      setPanelState("error");
+      onError?.(msg);
     }
-  }
+  }, [existingSession, setSession, setMessages, setError, onError]);
 
   // ============================================================
   // Send message
   // ============================================================
 
-  async function handleSend() {
+  const handleSend = useCallback(async () => {
     const trimmed = input.trim();
     if (!trimmed || isLoading) return;
 
     setInput("");
     await sendMessage(trimmed);
 
-    // Re-focus input after sending
     setTimeout(() => inputRef.current?.focus(), 50);
-  }
+  }, [input, isLoading, sendMessage]);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -286,16 +250,16 @@ function DialogueView() {
   // Render: Loading
   // ============================================================
 
-  if (pageState === "loading") {
+  if (panelState === "loading") {
     return (
-      <main className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="inline-block w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mb-3" />
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
             {session ? "正在恢复对话..." : "正在检查会话..."}
           </p>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -303,15 +267,15 @@ function DialogueView() {
   // Render: Error
   // ============================================================
 
-  if (pageState === "error") {
+  if (panelState === "error") {
     return (
-      <main className="min-h-screen flex items-center justify-center p-8">
+      <div className="flex items-center justify-center py-12">
         <div className="text-center max-w-md">
           <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
           <button
             onClick={() => {
               setError(null);
-              setPageState("loading");
+              setPanelState("loading");
               window.location.reload();
             }}
             className="px-4 py-2 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700"
@@ -319,7 +283,7 @@ function DialogueView() {
             重试
           </button>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -327,79 +291,64 @@ function DialogueView() {
   // Render: Resume Prompt
   // ============================================================
 
-  if (pageState === "resume-prompt") {
+  if (panelState === "resume-prompt") {
     return (
-      <main className="min-h-screen flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
-          <nav className="mb-6">
-            <Link
-              href="/"
-              className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400"
-            >
-              ← 返回首页
-            </Link>
-          </nav>
+      <div className="max-w-md mx-auto">
+        <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300 mb-3">
+          步骤一 · 信息采集
+        </span>
 
-          <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300 mb-3">
-            模块一 · 职业认知
-          </span>
+        <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
+          引导式对话
+        </h2>
+        <p className="text-neutral-600 dark:text-neutral-400 mb-6">
+          AI 引导 4-6 轮深度问答，逐步构建你的职业画像。
+        </p>
 
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
-            引导式对话
-          </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 mb-6">
-            AI 引导 4-6 轮深度问答，逐步构建你的职业画像。
-          </p>
-
-          {existingSession ? (
-            <div className="p-5 rounded-lg border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-950/50 mb-4">
-              <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-1">
-                你上次聊到第{" "}
-                <span className="font-semibold">
-                  {existingSession.roundNumber}
-                </span>{" "}
-                轮，已收集{" "}
-                <span className="font-semibold">
-                  {existingSession.filledCount}/{existingSession.requiredCount}
-                </span>{" "}
-                个维度。
-              </p>
-              {existingSession.pendingSlots.length > 0 && (
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                  待收集：{existingSession.pendingSlots.join("、")}
-                </p>
-              )}
-              <div className="flex gap-3 mt-4">
-                <button
-                  onClick={handleResume}
-                  className="flex-1 px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-                >
-                  继续上次对话
-                </button>
-                <button
-                  onClick={handleStartNew}
-                  className="px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800"
-                >
-                  重新开始
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={handleStartNew}
-              className="w-full px-4 py-3 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-            >
-              开始对话
-            </button>
-          )}
-
-          {error && (
-            <p className="mt-3 text-sm text-red-600 dark:text-red-400">
-              {error}
+        {existingSession ? (
+          <div className="p-5 rounded-lg border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-950/50 mb-4">
+            <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-1">
+              你上次聊到第{" "}
+              <span className="font-semibold">{existingSession.roundNumber}</span>{" "}
+              轮，已收集{" "}
+              <span className="font-semibold">
+                {existingSession.filledCount}/{existingSession.requiredCount}
+              </span>{" "}
+              个维度。
             </p>
-          )}
-        </div>
-      </main>
+            {existingSession.pendingSlots.length > 0 && (
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                待收集：{existingSession.pendingSlots.join("、")}
+              </p>
+            )}
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={handleResume}
+                className="flex-1 px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+              >
+                继续上次对话
+              </button>
+              <button
+                onClick={handleStartNew}
+                className="px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800"
+              >
+                重新开始
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={handleStartNew}
+            className="w-full px-4 py-3 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+          >
+            开始对话
+          </button>
+        )}
+
+        {error && (
+          <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>
+        )}
+      </div>
     );
   }
 
@@ -408,30 +357,28 @@ function DialogueView() {
   // ============================================================
 
   return (
-    <main className="h-screen flex flex-col">
-      {/* Header */}
-      <Navbar
-        badge="模块一 · 职业认知"
-        rightContent={
-          session && (
-            <div className="flex items-center gap-3">
-              <ProgressBar
-                filledCount={session.filledCount}
-                requiredCount={session.requiredCount}
+    <div className="flex flex-col h-[calc(100vh-200px)] min-h-[400px]">
+      {/* Slot 进度条 */}
+      {session && (
+        <div className="flex-shrink-0 px-4 py-2 border-b border-neutral-200 dark:border-neutral-800">
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
+              信息采集进度
+            </span>
+            <div className="flex-1 h-1.5 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary-600 rounded-full transition-all duration-500"
+                style={{
+                  width: `${session.requiredCount > 0 ? (session.filledCount / session.requiredCount) * 100 : 0}%`,
+                }}
               />
-              {session.filledCount >= session.requiredCount && (
-                <button
-                  onClick={handleEvaluate}
-                  disabled={isEvaluating}
-                  className="px-3 py-1.5 text-xs font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {isEvaluating ? "评估中..." : "开始评估"}
-                </button>
-              )}
             </div>
-          )
-        }
-      />
+            <span className="text-xs text-neutral-500 dark:text-neutral-400 tabular-nums">
+              {session.filledCount}/{session.requiredCount}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6">
@@ -461,7 +408,7 @@ function DialogueView() {
             />
           )}
 
-          {/* Loading indicator (waiting for first token) */}
+          {/* Loading indicator */}
           {isStreaming && !streamedText && (
             <div className="flex gap-3 max-w-[80%]">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
@@ -515,7 +462,6 @@ function DialogueView() {
             className="flex-1 px-4 py-2.5 text-sm border border-neutral-300 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             style={{ maxHeight: "120px" }}
             onInput={(e) => {
-              // Auto-resize textarea
               const target = e.currentTarget;
               target.style.height = "auto";
               target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
@@ -530,12 +476,12 @@ function DialogueView() {
           </button>
         </form>
       </div>
-    </main>
+    </div>
   );
 }
 
 // ============================================================
-// Message Bubble
+// Message Bubble (内部组件)
 // ============================================================
 
 function MessageBubble({
@@ -570,34 +516,6 @@ function MessageBubble({
           <span className="inline-block w-0.5 h-4 ml-0.5 bg-current animate-pulse align-text-bottom" />
         )}
       </div>
-    </div>
-  );
-}
-
-// ============================================================
-// Progress Bar
-// ============================================================
-
-function ProgressBar({
-  filledCount,
-  requiredCount,
-}: {
-  filledCount: number;
-  requiredCount: number;
-}) {
-  const pct = requiredCount > 0 ? (filledCount / requiredCount) * 100 : 0;
-
-  return (
-    <div className="flex items-center gap-2">
-      <div className="w-24 h-1.5 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-primary-600 rounded-full transition-all duration-500"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <span className="text-xs text-neutral-500 dark:text-neutral-400 tabular-nums">
-        {filledCount}/{requiredCount}
-      </span>
     </div>
   );
 }
