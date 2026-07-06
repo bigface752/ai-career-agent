@@ -8,11 +8,34 @@
 
 ## 当前任务
 
-**任务**：V1 上线准备 — Phase 6 灰度发布
+**任务**：V1.1 用户旅程重构 — Phase 2 前端开发完成
 
-**进度**：V1 开发全部完成 ✅，对抗性审查修复完成 ✅，上线规划完成 ✅，Phase 0-5 全部完成 ✅，Phase 6.1 邀请码机制 ✅，Phase 6.1.1 对抗性审查 ✅，Phase 6.6 监控告警验证 ✅，Phase 6.7 回滚方案 ✅，npm run build 通过 ✅
+**进度**：
+- V1 灰度发布进行中（Phase 6.2 部署完成）
+- V1.1 Phase 1 后端开发 ✅ 完成
+- V1.1 Phase 2 前端开发 ✅ 完成
+- Phase 2 对抗性审查 ✅ 完成（3个P0、4个P1已修复）
 
-**下一步**：Phase 6.2 Vercel 部署（需用户手动操作）→ Phase 6.3 Alpha 测试
+**V1.1 任务清单**：
+- [x] 1.1 数据库迁移（JourneySession 表 + Portrait 关联）
+- [x] 1.2 旅程 API（status / start / advance / rollback / step）
+- [x] 1.3 状态管理（journey.ts 规则引擎 + 步骤校验）
+- [x] 2.1 JourneyProgress 组件（进度条 + 回退功能）
+- [x] 2.2 JourneyStep 组件（步骤内容 + 操作按钮）
+- [x] 2.4 /journey 页面（组合组件 + 状态管理）— 跳过 2.3 JourneyChat，复用现有对话系统
+- [x] 2.5 首页改造（添加"开始我的职业决策"按钮）
+- [x] Phase 2 对抗性审查（修复P0×3、P1×4）
+
+**下一步**：Phase 3 测试与发布（任务3.1功能测试 → 3.2性能测试 → 3.3发布）
+
+**部署信息**：
+- 服务器：阿里云 ECS（116.62.149.221）
+- 进程管理：pm2（开机自启已配置）
+- 反代：nginx → port 3000
+- 公网地址：http://116.62.149.221
+- 数据库：Turso 生产库
+
+**下一步**：任务 1.2 旅程 API 开发
 
 ---
 
@@ -26,7 +49,7 @@
 | 3 | 测试体系（Vitest、P0/P1/P2 测试用例） | 3-5 天 | ✅ 完成 |
 | 4 | CI/CD（GitHub Actions + Vercel） | 1-2 天 | ✅ 完成 |
 | 5 | 数据库迁移（Turso 生产库初始化） | 1 天 | ✅ 完成 |
-| 6 | 灰度发布（Alpha → Beta → 全量） | 1-2 天 | 🔄 进行中 |
+| 6 | 灰度发布（Alpha → Beta → 全量） | 1-2 天 | 🔄 进行中（6.2 部署完成） |
 | 7 | 上线 Checklist | — | ⬜ 待执行 |
 
 **总预估**：11-18 天
@@ -37,12 +60,33 @@
 
 - [x] 6.1 邀请码机制实现（Schema + API + 注册流程集成）
 - [x] 6.1.1 对抗性审查（10 项发现，修复 7 项，记录 3 项）
-- [ ] 6.2 Vercel 部署（项目创建 + 环境变量配置）— 需用户手动操作
+- [x] 6.2 部署（阿里云 ECS + nginx + pm2）
 - [ ] 6.3 Alpha 测试（内部验证 + 核心流程测试）
 - [ ] 6.4 Beta 测试（小范围用户 + 反馈收集）
 - [ ] 6.5 全量发布（正式上线）
 - [x] 6.6 监控告警验证（Sentry + Health Check + 日志）
 - [x] 6.7 回滚方案确认
+
+### Phase 6.2 部署信息
+
+| 项目 | 详情 |
+|------|------|
+| 服务器 | 阿里云 ECS（Ubuntu 22.04.5 LTS） |
+| IP | 116.62.149.221 |
+| 进程管理 | pm2（开机自启已配置） |
+| 反代 | nginx → port 3000 |
+| 公网地址 | http://116.62.149.221 |
+| 数据库 | Turso 生产库（libsql://bigfacedatabase-bigfacezzz.aws-ap-northeast-1.turso.io） |
+| 健康检查 | http://116.62.149.221/api/health |
+
+### Phase 6.2 部署变更
+
+| 变更 | 详情 |
+|------|------|
+| 新增文件 | .env（服务器环境变量） |
+| nginx 配置 | /etc/nginx/sites-available/tiaobutiao（反代到 port 3000） |
+| pm2 配置 | tiaobutiao 进程（npm start） |
+| 项目改名 | "AI Career Agent" → "跳不跳" |
 
 ### Phase 6.1.1 对抗性审查结果
 
@@ -295,6 +339,8 @@ SENTRY_PROJECT=
 | `SENTRY_PROJECT` | Sentry 项目名 | Production |
 | `SENTRY_AUTH_TOKEN` | Sentry source map 上传 token | Production |
 
+> **注**：Phase 4 原计划使用 Vercel 部署，后改为阿里云 ECS。环境变量已配置在服务器 .env 文件中。
+
 ---
 
 ## Phase 0 环境变量清单
@@ -367,9 +413,9 @@ NODE_ENV=production
 | neat-freak冲突 | 方案B：存pending_updates表 |
 | 成本监控 | V1记录token数 |
 | 薪资数据 | curated_llm_inference，待接入真实数据源 |
-| 部署平台 | Vercel（已有 vercel.json） |
+| 部署平台 | 阿里云 ECS（116.62.149.221）+ nginx + pm2 |
 | 数据库 | Turso（生产）+ SQLite（开发） |
 
 ---
 
-*最后更新：2026-07-03 Phase 6 灰度发布进行中（邀请码机制 ✅ + 对抗性审查 ✅ + build 通过 ✅ + 监控告警验证 ✅ + 回滚方案 ✅ + 待 Vercel 部署）*
+*最后更新：2026-07-06 Phase 6 灰度发布进行中（邀请码机制 ✅ + 对抗性审查 ✅ + 阿里云部署 ✅ + 监控告警 ✅ + 回滚方案 ✅ + 待 Alpha 测试）*

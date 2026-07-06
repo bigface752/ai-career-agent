@@ -71,6 +71,12 @@ export default function Home() {
           <p className="mt-2 text-neutral-600 dark:text-neutral-400">
             AI 驱动的职业决策平台
           </p>
+          <Link
+            href="/journey"
+            className="mt-4 inline-flex items-center px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            开始我的职业决策
+          </Link>
         </div>
 
       <div className="grid gap-8">

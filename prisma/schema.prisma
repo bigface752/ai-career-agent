@@ -12,6 +12,23 @@ datasource db {
 }
 
 // ============================================================
+// 旅程状态枚举
+// ============================================================
+
+enum JourneyStep {
+  intake      // 信息采集
+  diagnosis   // 职业诊断
+  coaching    // 行动建议
+  complete    // 完成
+}
+
+enum StepStatus {
+  pending       // 待开始
+  in_progress   // 进行中
+  completed     // 已完成
+}
+
+// ============================================================
 // 用户与认证
 // ============================================================
 
@@ -42,6 +59,7 @@ model User {
   jobDescriptions     JobDescription[]
   matchResults        MatchResult[]
   inviteCodeUsages    InviteCodeUsage[]
+  journeySessions     JourneySession[]
 
   @@map("users")
 }
@@ -78,16 +96,42 @@ model DeviceSession {
 // ============================================================
 
 model Portrait {
-  id           String   @id @default(cuid())
-  userId       String   @unique @map("user_id")
-  portraitJson String   @map("portrait_json") // JSON: 完整职业画像
-  templateJson String?  @map("template_json") // JSON: 动态模板
-  completion   Float    @default(0) // 0.0 ~ 1.0
-  updatedAt    DateTime @default(now()) @map("updated_at")
+  id                String   @id @default(cuid())
+  userId            String   @unique @map("user_id")
+  portraitJson      String   @map("portrait_json") // JSON: 完整职业画像
+  templateJson      String?  @map("template_json") // JSON: 动态模板
+  completion        Float    @default(0) // 0.0 ~ 1.0
+  updatedAt         DateTime @default(now()) @map("updated_at")
+  journeySessionId  String?  @unique @map("journey_session_id")
 
-  user User @relation(fields: [userId], references: [id])
+  user            User            @relation(fields: [userId], references: [id])
+  journeySession  JourneySession? @relation(fields: [journeySessionId], references: [id], onDelete: SetNull)
 
   @@map("portraits")
+}
+
+// ============================================================
+// 用户旅程状态
+// ============================================================
+
+model JourneySession {
+  id             String      @id @default(cuid())
+  userId         String      @unique @map("user_id")
+  currentStep    JourneyStep @map("current_step")
+  stepStatus     StepStatus  @map("step_status")
+  stepData       String?     @map("step_data") // JSON: 当前步骤的上下文数据
+  completedSteps String?     @map("completed_steps") // JSON: 已完成步骤的摘要
+  version        Int         @default(0) // 乐观锁版本号
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+  expiresAt      DateTime?   @map("expires_at")
+
+  user    User     @relation(fields: [userId], references: [id])
+  portrait Portrait?
+
+  @@index([userId, updatedAt])
+  @@index([expiresAt])
+  @@map("journey_sessions")
 }
 
 model PortraitCorrection {
